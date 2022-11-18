@@ -1,5 +1,5 @@
 # unisel_timetable
-Scraping from https://etimetable.unisel.edu.my and extracted it onto MySQL. Planning to create a much more neater timetable website with the data scraped.
+Scraping script for https://etimetable.unisel.edu.my extracted into MySQL. Planning to create a much more neater timetable website with the data scraped.
 
 
 ###### 19 Nov 2022
