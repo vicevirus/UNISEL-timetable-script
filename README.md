@@ -5,3 +5,6 @@ Scraping script for http://etimetable.unisel.edu.my extracted into MySQL. Planni
 ###### 19 Nov 2022
 It was pretty challenging for me to work on this data as the data is very inconsistent. The best I could do now is automate most of it 
 and then maintain it manually.
+
+###### 20 Nov 2022
+Cleaned up little bit of data.
