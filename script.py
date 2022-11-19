@@ -4,6 +4,10 @@ import re
 import requests
 from collections import Counter
 import mysql.connector
+import re
+
+semester = 32234
+
 
 dicts = {'subjectsName': [],
          'lecturersName': [],
@@ -17,9 +21,9 @@ dicts = {'subjectsName': [],
 
 
 subjectPage = requests.get(
-    "http://etimetable.unisel.edu.my/BJ22234/BJ22234_subjects_days_vertical.html")
+    "http://etimetable.unisel.edu.my/BJ{}/BJ{}_subjects_days_vertical.html".format(semester, semester))
 teachersPage = requests.get(
-    "http://etimetable.unisel.edu.my/BJ22234/BJ22234_teachers_days_vertical.html")
+    "http://etimetable.unisel.edu.my/BJ{}/BJ{}_teachers_days_vertical.html".format(semester, semester))
 
 
 subjectSoup = BeautifulSoup(subjectPage.content, 'html.parser')
@@ -85,11 +89,16 @@ for subject in subjects:
 for subject in dicts['subjectsName']:
 
     if len(re.split('-|\n', subject)) == 1:
-        subject = re.split('-|\n|\s', subject)
-
-    else:
         subject = re.split('-|\n', subject)
 
+        
+       
+    else:
+        subject = re.split('-|\n', subject)
+    
+   
+ 
+        
     if (len(subject) != 2):
 
         subjectCode = subject[0]
@@ -97,9 +106,63 @@ for subject in dicts['subjectsName']:
         subject = [subjectCode.strip(), ' '.join(subject)]
     else:
         subject = subject
+        
+    
 
-    subjectCode = subject[0].replace(" ", "")
+    subjectCode = subject[0]
     subjectName = subject[1]
+
+    
+    
+    m = re.search(r'\d+$', subjectCode)
+    if m is None:
+        
+    
+        res = re.findall(r'(\w+?)(\d+)', subjectCode)
+        
+        
+        temp = res[0][0] + res[0][1]
+        
+        tempSplit = subjectCode.split(temp)
+        
+        subjectName = tempSplit[1] + subjectName
+        
+        subjectCode = temp
+    
+    
+    
+    
+    if (subjectName.startswith('/')):
+        tempSubName = subjectName[:8]
+        subjectCode = subjectCode + tempSubName
+        subjectCode = subjectCode.replace(" ", '')
+        subjectName = subjectName.replace(tempSubName, '')
+        subjectName = subjectName.lstrip(' ')
+    elif (subjectName.startswith(' / ')):
+        tempSubName = subjectName[:10]
+        subjectCode = subjectCode + tempSubName
+        subjectCode = subjectCode.replace(" ", '')
+        subjectName = subjectName.replace(tempSubName, '')
+        subjectName = subjectName.lstrip(' ')
+        
+    
+    subjectCode = subjectCode.replace(" ", '') 
+    subjectName = subjectName.lstrip(' ')
+    
+    # Check if the subject code is accidentally combined with the subject name
+    m = re.search(r'\d+$', subjectCode)
+    # if the string ends in digits m will be a Match object, or None otherwise.
+    if m is not None:
+        if subjectCode[-2].isalpha():
+            unformatted = subjectCode
+            subjectCode = subjectCode[0:7]
+            unformatted = unformatted.replace(subjectCode, '')
+            subjectName = unformatted
+     
+            
+        
+    
+
 
     subjectSql = "INSERT IGNORE INTO subjects (subjectCode, subjectName) VALUES (%s, %s)"
     valSubjects = (subjectCode, subjectName)
@@ -113,6 +176,15 @@ for subject in dicts['subjectsName']:
     mydb.commit()
 
 
+# Delete duplicate subjects wherever possible
+duplicateSqlSub = "DELETE n1 FROM subjects n1, subjects n2 WHERE n1.id > n2.id AND n1.subjectCode = n2.subjectCode"
+duplicateSqlTime = "DELETE n1 FROM subjectsTime n1, subjectsTime n2 WHERE n1.id > n2.id AND n1.subjectCode = n2.subjectCode"
+mycursor.execute(duplicateSqlSub)
+mycursor.execute(duplicateSqlTime)
+
+mydb.commit()
+
+
 # For subjectsTime table
 ############################
 
@@ -124,7 +196,6 @@ for idx, time in enumerate(availSub):
 
     time.pop(0)
 
-    print(len(time))
 
     if (len(time) != 1):
 
@@ -137,11 +208,11 @@ mycursor.execute("SELECT MAX(id) from subjects;")
 
 myresult = mycursor.fetchone()
 
-# print(myresult[0])
+
 
 for x in range(myresult[0] * 6):
 
-    # print(dicts['subjectsTime'][x]['time'])
+    
 
     if (x % 6 + 1 == 1):
         day = 'Monday'
