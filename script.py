@@ -90,7 +90,8 @@ for subject in dicts['subjectsName']:
 
     if len(re.split('-|\n', subject)) == 1:
         subject = re.split('-|\n', subject)
-
+        
+        
         
        
     else:
@@ -108,6 +109,7 @@ for subject in dicts['subjectsName']:
         subject = subject
         
     
+    subjectRef = subject[0]
 
     subjectCode = subject[0]
     subjectName = subject[1]
@@ -161,7 +163,9 @@ for subject in dicts['subjectsName']:
      
             
         
-    
+    if (len(subjectCode) < 7):
+        subjectCode = subjectRef.replace(" ",'')
+        
 
 
     subjectSql = "INSERT IGNORE INTO subjects (subjectCode, subjectName) VALUES (%s, %s)"
