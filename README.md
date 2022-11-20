@@ -11,6 +11,7 @@ Cleaned up little bit of data.
 
 ###### 20 Nov 2022
 Added two arguments and cleaned up data.
-
+```
 --semester <number>
 --campus <BJ / SA>
+```
